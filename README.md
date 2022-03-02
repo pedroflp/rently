@@ -27,8 +27,8 @@ A marketplace to find and annouce good places to rent or buy
 ## Screenshots
 
 ![Home](https://i.imgur.com/LFc19Br.png)
-![Home](https://i.imgur.com/05M6ZHF.png)
-![Home](https://i.imgur.com/vMYrI23.png)
-![Home](https://i.imgur.com/Yr7jCEJ.png)
-![Home](https://i.imgur.com/2jYBd5s.png)
+![Home](https://i.imgur.com/xsXEb7D.png)
+![Home](https://i.imgur.com/zAeVMVT.png)
+![Home](https://i.imgur.com/xK0QYPl.png)
+![Home](https://i.imgur.com/8LrmYgx.png)
     
