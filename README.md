@@ -5,12 +5,11 @@ A marketplace to find and annouce good places to rent or buy
 
 
 ## Installation
-[APK v1.0.0](https://www.file.io/Eafj/download/OBLLW4utFmU8)
+[APK v1.1.0](https://www.file.io/Eafj/download/OBLLW4utFmU8)
 
 ## Development Stack
 
 ![ReactNative](https://img.shields.io/static/v1?label=APP&message=React-Native&color=61DAFB&style=for-the-badge&logo=react)
-![Redux](https://img.shields.io/static/v1?label=APP&message=Redux&color=7248b6&style=for-the-badge&logo=redux)
 ![Firebase](https://img.shields.io/static/v1?label=Backend&message=Firebase&color=ffc400&style=for-the-badge&logo=firebase)
 
 
