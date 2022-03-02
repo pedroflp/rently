@@ -6,6 +6,7 @@ A marketplace to find and annouce good places to rent or buy
 
 ## Installation
 [APK v1.1.0](https://www.file.io/Eafj/download/OBLLW4utFmU8)
+| Play Store release version soon
 
 ## Development Stack
 
