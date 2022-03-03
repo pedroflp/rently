@@ -157,6 +157,9 @@ android {
     }
     buildTypes {
         debug {
+            manifestPlaceholders = [
+                MAPS_API_KEY: "$System.env.GOOGLE_API_SERVICES",
+            ]
             signingConfig signingConfigs.debug
             if (nativeArchitectures) {
                 ndk {
@@ -165,6 +168,9 @@ android {
             }
         }
         release {
+            manifestPlaceholders = [
+                MAPS_API_KEY: "$System.env.GOOGLE_API_SERVICES",
+            ]
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
             signingConfig signingConfigs.debug
