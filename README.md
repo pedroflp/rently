@@ -5,7 +5,7 @@ A marketplace to find and annouce good places to rent or buy
 
 
 ## Installation
-[APK v1.1.0](https://drive.google.com/file/d/1DNCL-VaX3izILuIl3r9l_WeOvRvZt_L3/view)
+[APK v1.1.0](https://drive.google.com/file/d/1d0NRe3i7HmVkK9pGPlZdT5BELIH0_Gjq/view?usp=sharing)
 | Play Store release version soon
 
 ## Development Stack
