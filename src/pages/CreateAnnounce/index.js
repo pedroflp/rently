@@ -24,7 +24,7 @@ import Feather from 'react-native-vector-icons/Feather'
 
 import styles from './styles';
 import { colors } from '../../style/colors';
-import { Apartaments, House, RentHands, SaleHands, Store } from '../../assets/icons/svgIcons';
+import { Apartaments, House, RentHands, SaleHands, Store } from '../../../assets/icons/svgIcons';
 
 import useUser from '../../hooks/useUser';
 import useAnnouncement from '../../hooks/useAnnouncement';

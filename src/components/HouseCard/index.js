@@ -10,7 +10,7 @@ import { colors } from '../../style/colors';
 const HouseCard = ({ title, photos, description, type, category, price, location, rooms, isAvailable, onPress, creator, user }) => {
   return (
     <TouchableOpacity activeOpacity={0.8} onPress={onPress} style={styles.container}>
-      {user?.userId === creator.userId && <Text style={styles.announceFlag}>Você é o anunciante</Text>}
+      {/* {user?.userId === creator.userId && <Text style={styles.announceFlag}>Você é o anunciante</Text>} */}
       <Image style={styles.backgroundImage} source={{ uri: photos[0] }} resizeMode="cover" />
       <View style={styles.content}>
         <View style={styles.location}>

@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { Button } from '../../components/Button';
 
-import backgroundImage from '../../assets/house_white_splash.jpg'
+import backgroundImage from '../../../assets/house_white_splash.jpg'
 
 import styles from './styles';
 import { colors } from '../../style/colors';

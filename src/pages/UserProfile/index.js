@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, ScrollView, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native'
 
-import TabNavigation from '../../components/TabNavigation';
 import { Button } from '../../components/Button';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -17,8 +16,6 @@ const UserProfile = () => {
 
   return (
     <View style={styles.container}>
-      <TabNavigation />
-
       <View>
         <View style={styles.profileCard}>
           {user.photo

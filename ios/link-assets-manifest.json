@@ -1,0 +1,37 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/assets/fonts/Geo-Regular.ttf",
+      "sha1": "14fbf93449fff3515e350b52bcda509e5cafd950"
+    },
+    {
+      "path": "src/assets/fonts/Inter-Bold.ttf",
+      "sha1": "444cdca680f8ce64c16fe5a606dcfbe4b33e7925"
+    },
+    {
+      "path": "src/assets/fonts/Inter-Light.ttf",
+      "sha1": "732e278a85762a0edfb4e077e44e3eb39d8af92e"
+    },
+    {
+      "path": "src/assets/fonts/Inter-Regular.ttf",
+      "sha1": "c2767d146c3c10fe6c9b8ac0f181ef907c111f19"
+    },
+    {
+      "path": "src/assets/fonts/Inter-SemiBold.ttf",
+      "sha1": "acda92adc6cf8c67c89395c65f371a4d2b05a783"
+    },
+    {
+      "path": "src/assets/fonts/Raleway-Bold.ttf",
+      "sha1": "c828019f33d43d0701f14626ab5c48b7cff0d431"
+    },
+    {
+      "path": "src/assets/fonts/Raleway-Medium.ttf",
+      "sha1": "678d7e14cc39c7fab7f9a8f9d3a44b85cf8228f5"
+    },
+    {
+      "path": "src/assets/fonts/Raleway-Regular.ttf",
+      "sha1": "7f3a56349d12c56bafbefcfd199e62464ca6e238"
+    }
+  ]
+}

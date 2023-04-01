@@ -2,6 +2,7 @@ export const colors = {
   main: '#164AFE',
   error: '#ff5e5b',
   success: "#2BC48A",
+  white: '#FFF',
   grey: {
     lighter: '#F8F9FA',
     light: '#E9ECEF',

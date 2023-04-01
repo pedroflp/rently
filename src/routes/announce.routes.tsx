@@ -8,6 +8,7 @@ import UserProfile from '../pages/UserProfile';
 
 import { colors } from '../style/colors';
 import FavoritesPage from '../pages/FavoritesPage';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 const { Navigator, Screen } = createNativeStackNavigator()
 
@@ -22,23 +23,14 @@ const UserStackRouter = () => {
         }
       }}
     >
-      <Screen name="Home" component={Home} />
-      <Screen name="CreateAnnounce" component={CreateAnnounce} options={{ contentStyle: { backgroundColor: colors.grey.lighter } }} />
-      <Screen name="EditAnnounce" component={CreateAnnounce} options={{ contentStyle: { backgroundColor: colors.grey.lighter } }} />
-      <Screen name="AnnouncePage" component={AnnouncePage} />
-      <Screen
-        options={{
-          animation: 'slide_from_right'
-        }}
-        name="FavoritesPage"
-        component={FavoritesPage}
+      <Screen 
+        name="EditAnnounce" 
+        component={CreateAnnounce} 
+        options={{ contentStyle: { backgroundColor: colors.grey.lighter } }} 
       />
-      <Screen
-        options={{
-          animation: 'slide_from_left'
-        }}
-        name="UserProfile"
-        component={UserProfile}
+      <Screen 
+        name="AnnouncePage" 
+        component={AnnouncePage} 
       />
     </Navigator>
   );

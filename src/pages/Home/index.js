@@ -18,11 +18,10 @@ import { colors } from '../../style/colors';
 
 import useUser from '../../hooks/useUser';
 import useAnnouncement from '../../hooks/useAnnouncement';
-import TabNavigation from '../../components/TabNavigation';
 
 const Home = () => {
   const navigation = useNavigation()
-  const { user, logoff } = useUser()
+  const { user } = useUser()
   const { setAnnouncement } = useAnnouncement()
 
   const [houses, setHouses] = useState([])
@@ -102,8 +101,6 @@ const Home = () => {
 
   return (
     <View style={styles.container}>
-      <TabNavigation />
-
       <View style={{ paddingHorizontal: 30, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
         <Text style={styles.houseListTitle}>Imóveis disponíveis</Text>
         <TouchableOpacity onPress={() => setFilterModalIsOpened(true)}>

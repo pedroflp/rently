@@ -3,7 +3,6 @@ import { View, Text, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native'
 
 import HouseCard from '../../components/HouseCard';
-import TabNavigation from '../../components/TabNavigation';
 
 import styles from '../Home/styles';
 
@@ -17,8 +16,6 @@ const FavoritesPage = () => {
 
   return (
     <View style={styles.container}>
-      <TabNavigation />
-
       <View style={{ paddingHorizontal: 30, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
         <Text style={styles.houseListTitle}>Imóveis favoritados</Text>
       </View>

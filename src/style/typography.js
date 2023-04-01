@@ -1,14 +1,14 @@
 export const typography = {
-  geo: 'Geo_400Regular',
+  geo: 'Geo-Regular',
   raleway: {
-    regular: 'Raleway_400Regular',
-    medium: 'Raleway_500Medium',
-    bold: 'Raleway_700Bold',
+    regular: 'Raleway-Regular',
+    medium: 'Raleway-Medium',
+    bold: 'Raleway-Bold',
   },
   inter: {
-    light: 'Inter_300Light',
-    bold: 'Inter_700Bold',
-    semiBold: 'Inter_600SemiBold',
-    regular: 'Inter_400Regular',
+    light: 'Inter-Light',
+    bold: 'Inter-Bold',
+    semiBold: 'Inter-SemiBold',
+    regular: 'Inter-Regular',
   },
 }

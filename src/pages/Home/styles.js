@@ -1,5 +1,5 @@
 import { lighten } from "polished";
-import { Dimensions, StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import { colors } from "../../style/colors";
 import { typography } from "../../style/typography";
 
@@ -7,7 +7,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: lighten(0.06, colors.grey.main),
-    paddingTop: 50,
+    paddingTop: Platform.select({
+      android: 50, ios: 60
+    }),
     position: 'relative',
   },
 
