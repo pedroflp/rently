@@ -5,7 +5,10 @@ A marketplace to find and annouce good places to rent or buy
 
 
 ## Installation
-Play Store release version soon
+Rently 1.0 - APK Version
+[Baixar versão apk](https://encurtador.com.br/ioAY0);
+
+** Play Store release version soon
 
 ## Development Stack
 
