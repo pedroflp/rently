@@ -1,12 +1,11 @@
 
-# 🏡 RentOuse
+# 🏡 Rently
 
 A marketplace to find and annouce good places to rent or buy 
 
 
 ## Installation
-[APK v1.1.0](https://drive.google.com/file/d/1d0NRe3i7HmVkK9pGPlZdT5BELIH0_Gjq/view?usp=sharing)
-| Play Store release version soon
+Play Store release version soon
 
 ## Development Stack
 
@@ -23,12 +22,20 @@ A marketplace to find and annouce good places to rent or buy
 - Use your device default map app to see locations
 - Contact announcers directly 
 
+## Cool implementations
+
+- Use application anonymously, without a required signin
+- Upgrade from anonym account to credital use account
+- Smart and adaptative dynamic UI based in user account type (guest, user, announcer)
+
 
 ## Screenshots
 
-![Home](https://i.imgur.com/LFc19Br.png)
-![Home](https://i.imgur.com/xsXEb7D.png)
-![Home](https://i.imgur.com/zAeVMVT.png)
-![Home](https://i.imgur.com/xK0QYPl.png)
-![Home](https://i.imgur.com/8LrmYgx.png)
+![Splash](https://i.imgur.com/u1I15oV.png)
+![Criacao](https://i.imgur.com/YybIRsa.png)
+![Home](https://i.imgur.com/ci0oRMr.png)
+![Anuncio](https://i.imgur.com/FgNdMGP.png)
+![Edit](https://i.imgur.com/NLOQZyD.png)
+![Favoritos](https://i.imgur.com/vLT9sSP.png)
+![Anonimo](https://i.imgur.com/3lkYJKg.png)
     
