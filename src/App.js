@@ -9,30 +9,24 @@ import Router from './routes';
 
 import { toastConfig } from './style/toastStyles';
 
-import { API_KEY_GOOGLE_SERVICES } from '@env';
-import { StatusBar } from 'react-native';
+import Config from 'react-native-config';
+import { Platform, StatusBar } from 'react-native';
 import { setCustomText } from 'react-native-global-props';
 import { typography } from './style/typography';
 import { colors } from './style/colors';
 import { firebase } from '@react-native-firebase/auth';
+import { NavigationContainer } from '@react-navigation/native';
 
 const App = () => {
-  const apiKey = API_KEY_GOOGLE_SERVICES
-  Geocoder.init(apiKey);
-
-  const customTextProps = {
-    style: {
-      fontFamily: typography.raleway.regular,
-      color: colors.black.main,
-    }
-  }
-  setCustomText(customTextProps);
+  Geocoder.init(Config.MAPS_API_KEY);
 
   return (
     <UserContextProvider>
       <AnnouncementContextProvider>
         <StatusBar translucent backgroundColor="transparent" barStyle='dark-content' />
-        <Router />
+        <NavigationContainer>
+          <Router />
+        </NavigationContainer>
         <Toast config={toastConfig} />
       </AnnouncementContextProvider>
     </UserContextProvider>

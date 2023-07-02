@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { Text, ScrollView, TouchableOpacity, View, Image, ImageBackground, KeyboardAvoidingView, Dimensions, StatusBar, Platform } from 'react-native';
 import MaskInput, { Masks } from 'react-native-mask-input';
-import { TextInput } from 'react-native-paper'
-import { useNavigation } from '@react-navigation/native'
+import { ActivityIndicator, Modal, TextInput } from 'react-native-paper'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import ReactNativeModal from 'react-native-modal';
 import { launchImageLibrary } from 'react-native-image-picker';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -27,58 +27,49 @@ import { colors } from '../../style/colors';
 import { Apartaments, House, RentHands, SaleHands, Store } from '../../../assets/icons/svgIcons';
 
 import useUser from '../../hooks/useUser';
-import useAnnouncement from '../../hooks/useAnnouncement';
+import { collectionsName } from '../../constants/collectionsName';
+
+const INITIAL_ANNOUNCEMENT_FORM_DATA = {
+  description: '',
+  category: '',
+  type: '',
+  rooms: {
+    bathrooms: '',
+    bedrooms: '',
+    garages: '',
+    area: '',
+  },
+  price: '',
+  contact: '',
+  location: '',
+  petFriendly: true,
+  additionalInfo: null,
+}
 
 const CreateAnnounce = () => {
   const navigation = useNavigation()
   const scrollViewRef = useRef(null)
 
-  const { user } = useUser()
-  const { announcementToEdit: announcement, setAnnouncement, setAnnouncementToEdit } = useAnnouncement()
+  const { user, userId } = useUser()
+  const { params } = useRoute();
+  const isEditing = !!params?.isEditing;
+  const announcement = params?.announcement;
 
-  const [rent, setRent] = useState({
-    description: '',
-    category: '',
-    type: '',
-    rooms: {
-      bathrooms: '',
-      bedrooms: '',
-      garages: '',
-      area: '',
-    },
-    price: '',
-    contact: '',
-    location: '',
-    petFriendly: true,
-    additionalInfo: null,
-  });
+  const [rent, setRent] = useState(INITIAL_ANNOUNCEMENT_FORM_DATA);
 
   const [images, setImages] = useState([]);
-
   const [imageToView, setImageToView] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
-  const handleCreateAnnounce = async (isEditing) => {
+  const handleCreateAnnounce = async () => {
     setLoading(true)
-    const photos = []
-
-    if (announcement?.photos !== images) {
-      for (const image of images) {
-        if (image && !announcement?.photos?.includes(image)) {
-          const fileName = `[${user.userId}]${rent.title}__photo-${images.indexOf(image)}_${Date.now()}`;
-          const reference = storage().ref(`/houses/${fileName}.jpg`);
-
-          await reference.putFile(image)
-          const photoUrl = await reference.getDownloadURL()
-
-          photos.push(photoUrl)
-        } else photos.push(image)
-      }
-    } else photos.push(...images)
 
     const getGeocodeLocation = async () => {
+      if (!rent.location) return; 
+
       try {
-        const location = await Geocoder.from(rent.location)
+        const location = await Geocoder.from(rent?.location)
         const address = {
           complete: location.results[0].formatted_address,
           street: location.results[0].address_components[1].long_name,
@@ -97,55 +88,55 @@ const CreateAnnounce = () => {
         Toast.show({
           type: 'error',
           text1: 'Erro interno ao obter o endereço!',
-          text2: "Tente novamente mais tarde ou reporte o problema",
+          text2: error.message,
           position: 'bottom',
         })
       }
     }
 
     let addressResult = null;
-    if (announcement?.location?.coordinate !== rent.location) addressResult = await getGeocodeLocation()
+    if (announcement?.location?.coordinate !== rent?.location) addressResult = await getGeocodeLocation()
     else addressResult = announcement?.location?.address
 
     const data = {
-      photos: photos,
-      description: rent.description,
-      category: rent.category,
-      type: rent.type,
-      contact: rent.contact.replace(/[^0-9]/g, ''),
+      description: rent?.description,
+      category: rent?.category,
+      type: rent?.type,
+      contact: rent?.contact.replace(/[^0-9]/g, ''),
       location: {
-        coordinate: rent.location,
+        coordinate: rent?.location,
         address: addressResult,
       },
-      price: rent.price.replace(/[^0-9]/g, '') / 100,
-      rooms: rent.rooms,
-      creator: {
-        userId: user.userId,
-        name: user.name,
-        photo: user.photo || null,
-      },
+      price: rent?.price.replace(/[^0-9]/g, '') / 100,
+      rooms: rent?.rooms,
+      creator: userId,
       isAvailable: true,
-      petFriendly: rent.petFriendly,
-      lastUpdateDate: new Date().toISOString(),
+      petFriendly: rent?.petFriendly,
+      created: new Date().toISOString(),
+      updated: new Date().toISOString(),
       additionalInfo: {
-        ...rent.additionalInfo,
-        floor: rent.category === "apartment" ? rent.additionalInfo.floor : null,
+        ...rent?.additionalInfo,
+        floor: rent?.category === "apartment" ? rent?.additionalInfo.floor : null,
       },
     }
 
-    if (isEditing) {
+    if (!!isEditing) {
+      const photos = await uploadImagesToStorage(announcement?.id);
+
       firestore()
-        .collection("Houses")
-        .doc(announcement.id)
-        .update(data)
+        .collection(collectionsName.ANNOUNCEMENTS)
+        .doc(announcement?.id)
+        .update({ ...data, photos })
         .then(() => {
           Toast.show({
             type: 'success',
             text1: 'Imóvel atualizado com sucesso!',
             position: "bottom",
-          })
+          });
 
-          setAnnouncement({ id: announcement.id, ...data }) // atualiza o announce pelos dados aqui para nao precisar auto update com firebase (economia)
+          navigation.goBack();
+          setRent(INITIAL_ANNOUNCEMENT_FORM_DATA);
+          setImages([]);
         })
         .catch((error) => {
           Toast.show({
@@ -156,75 +147,94 @@ const CreateAnnounce = () => {
           })
         })
         .finally(() => {
-          navigation.goBack()
           setLoading(false)
-          setAnnouncementToEdit(null)
         })
     } else {
       firestore()
-        .collection("Houses")
+        .collection(collectionsName.ANNOUNCEMENTS)
         .add(data)
-        .then(res => {
-          res.onSnapshot(doc => {
-            firestore().collection("Users").doc(user.userId).update({
-              announcements: firestore.FieldValue.arrayUnion({
-                id: doc.ref.id,
-                data: doc.data(),
-              }),
-            })
-          });
+        .then(async (doc) => {
+          const photos = await uploadImagesToStorage(doc.id);
+          console.log('photos', photos);
+
+            firestore().collection(collectionsName.ANNOUNCEMENTS)
+            .doc(doc.id).update({ photos });
+        
+          firestore().collection(collectionsName.USERS)
+            .doc(userId).collection(collectionsName.USER_ANNOUNCEMENTS).doc(doc.id).set({});
+          
           Toast.show({
             type: 'success',
             text1: 'Novo imóvel criado!',
             position: "bottom",
           })
-        })
-        .catch((error) => {
+          navigation.goBack();
+          setRent(INITIAL_ANNOUNCEMENT_FORM_DATA);
+          setImages([]);
+        }).catch((error) => {
           Toast.show({
             type: 'error',
             text1: 'Erro ao criar imóvel',
             text2: error.message,
             position: "bottom",
-          })
-        })
-        .finally(() => {
-          navigation.goBack()
+          });
+        }).finally(() => {
           setLoading(false)
-        })
-
-      //
+        });  
     }
-
   }
 
   const handlePickerImage = async () => {
+    setUploadingImages(true);
     const result = await launchImageLibrary({
       mediaType: 'photo',
-    })
-
+    });
+    
     if (result?.assets?.length > 0) {
-      if (result.assets[0]?.fileSize > 5 * 100000) // 5mb
-      {
-        Toast.show({
-          type: 'error',
-          text1: 'Imagem muito grande!',
-          text2: 'Envie uma imagem com tamanho menor que 5MB',
-          position: 'bottom'
-        })
-
-        return;
-      }
-
-      setImages(images => ([...images, result.assets[0].uri]))
+      result.assets.map(image => {
+        if (image.fileSize > 5 * 100000) // 5mb
+        {
+          Toast.show({
+            type: 'error',
+            text1: 'Imagem muito grande!',
+            text2: 'Envie uma imagem com tamanho menor que 5MB',
+            position: 'bottom'
+          })
+        }
+        else {
+          if (images?.length > 0) setImages(prevImages => ([...prevImages, image.uri]))
+          else setImages([image.uri])
+        } 
+      })
     }
 
+    setUploadingImages(false);
+  }
+
+  const uploadImagesToStorage = async (announcementId) => {
+    if (!images.length) return;
+
+    return await Promise.all(
+      images.map(async (image, index) => {
+        const isUrl = image.split('://')[0] === "https";
+        if (isUrl) return image;
+
+        const reference = storage().ref(`announcements/${userId}/${announcementId}/photo-${index + 1}.jpg`);
+        await reference.putFile(image)
+        return await reference.getDownloadURL();
+      })
+    );
   }
 
   const handleRemoveImage = () => {
     const newImages = [...images];
-
     setImages(newImages.filter(image => image !== imageToView))
     setImageToView(null);
+    // const imageRef = String(imageToView).split('?')[0].split('/o/')[1].split('%2F').join('/')
+    // const imageToDelete = storage().ref().child(imageRef);
+
+    // imageToDelete.delete().then(() => {
+    // })
   }
 
   const categories = [
@@ -272,21 +282,19 @@ const CreateAnnounce = () => {
     <KeyboardAvoidingView
       style={styles.container}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10, paddingHorizontal: 20 }}>
-        <TouchableOpacity onPress={() => {
-          navigation.goBack()
-
-          if (announcement) setAnnouncementToEdit(null)
-        }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16, paddingHorizontal: 20 }}>
+        <TouchableOpacity disabled={loading} onPress={() => navigation.goBack()}>
           <MaterialCommunityIcons name="arrow-left" size={24} color={colors.black.main} />
         </TouchableOpacity>
         <Text style={styles.containerTitle}>{announcement ? "Editar imóvel" : "Anunciar novo imóvel"}</Text>
       </View>
+
       <ScrollView
         contentContainerStyle={{
-          paddingBottom: announcement ? 80 : 20,
+          paddingBottom: isEditing ? 120 : 40,
           flexGrow: 1
         }}
+        style={{ paddingVertical: 16 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         ref={scrollViewRef}
@@ -296,7 +304,8 @@ const CreateAnnounce = () => {
           onChangeText={value => setRent(state => ({ ...state, description: value }))}
           multiline
           numberOfLines={3}
-          value={rent.description}
+          backgroundColor={colors.white}
+          value={rent?.description}
           customContainerStyles={{
             marginHorizontal: 20,
           }}
@@ -305,7 +314,6 @@ const CreateAnnounce = () => {
         <Input
           label='Categoria'
           disableBorder
-          backgroundColor="transparent"
           customLabelStyles={{
             marginLeft: 20
           }}
@@ -323,7 +331,7 @@ const CreateAnnounce = () => {
                   onPress={() => setRent(state => ({ ...state, category: category.value }))}
                 >
                   <View style={styles.categoryCardRadio}>
-                    {rent.category === category.value && <View style={styles.categoryCardRadioChecked} />}
+                    {rent?.category === category.value && <View style={styles.categoryCardRadioChecked} />}
                   </View>
                   <View>{category.icon}</View>
                   <Text style={styles.categoryCardLabel}>{category.label}</Text>
@@ -333,17 +341,18 @@ const CreateAnnounce = () => {
           }
         />
 
-        {rent.category === 'apartment' && (
+        {rent?.category === 'apartment' && (
           <Input
             label="Nº do Andar"
             left={<TextInput.Icon name="office-building-outline" size={24} color={colors.grey.darker} />}
             right={<TextInput.Affix text='º andar' />}
             keyboardType="numeric"
+            backgroundColor={colors.white}
             customContainerStyles={{
               maxWidth: '35%',
               marginHorizontal: 20,
             }}
-            value={rent.additionalInfo?.floor}
+            value={rent?.additionalInfo?.floor}
             onChangeText={value => setRent(state => ({ ...state, additionalInfo: { ...state.additionalInfo, floor: value } }))}
           />
         )}
@@ -357,7 +366,6 @@ const CreateAnnounce = () => {
           }}
           customChildren={
             <ScrollView
-              style={{ marginTop: -25, marginBottom: -10, }}
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: 20 }}
@@ -366,28 +374,32 @@ const CreateAnnounce = () => {
                 customInputStyles={{ marginRight: 7 }}
                 left={<TextInput.Icon name="toilet" color={colors.grey.darker} />}
                 onChangeText={value => setRent(state => ({ ...state, rooms: { ...state.rooms, bathrooms: value } }))}
-                value={rent.rooms.bathrooms}
+                value={rent?.rooms?.bathrooms}
+                backgroundColor={colors.white}
                 keyboardType="numeric"
               />
               <Input
                 customInputStyles={{ marginRight: 7 }}
                 left={<TextInput.Icon name="bed-outline" color={colors.grey.darker} />}
                 onChangeText={value => setRent(state => ({ ...state, rooms: { ...state.rooms, bedrooms: value } }))}
-                value={rent.rooms.bedrooms}
+                value={rent?.rooms?.bedrooms}
+                backgroundColor={colors.white}
                 keyboardType="numeric"
               />
               <Input
                 customInputStyles={{ marginRight: 7 }}
                 left={<TextInput.Icon name="car-side" color={colors.grey.darker} />}
                 onChangeText={value => setRent(state => ({ ...state, rooms: { ...state.rooms, garages: value } }))}
-                value={rent.rooms.garages}
+                value={rent?.rooms?.garages}
+                backgroundColor={colors.white}
                 keyboardType="numeric"
               />
               <Input
                 left={<TextInput.Icon name="axis-arrow" color={colors.grey.darker} />}
                 right={<TextInput.Affix text='m²' />}
                 onChangeText={value => setRent(state => ({ ...state, rooms: { ...state.rooms, area: value } }))}
-                value={rent.rooms.area}
+                value={rent?.rooms?.area}
+                backgroundColor={colors.white}
                 keyboardType="numeric"
               />
             </ScrollView>
@@ -415,7 +427,7 @@ const CreateAnnounce = () => {
                   onPress={() => setRent(state => ({ ...state, type: type.value }))}
                 >
                   <View style={styles.categoryCardRadio}>
-                    {rent.type === type.value && <View style={styles.categoryCardRadioChecked} />}
+                    {rent?.type === type.value && <View style={styles.categoryCardRadioChecked} />}
                   </View>
                   <View>{type.icon}</View>
                   <Text style={styles.categoryCardLabel}>{type.label}</Text>
@@ -429,9 +441,10 @@ const CreateAnnounce = () => {
           right={rent?.type === "rent" && <TextInput.Affix textStyle={{ marginRight: 5 }} text="/mes" />}
           label='Preço'
           keyboardType="numeric"
+          backgroundColor={colors.white}
           render={props => <MaskInput
             {...props}
-            value={String(rent.price)}
+            value={String(rent?.price)}
             mask={Masks.BRL_CURRENCY}
             onChangeText={value => setRent(state => ({ ...state, price: value }))}
           />}
@@ -440,16 +453,21 @@ const CreateAnnounce = () => {
           }}
         />
 
-
         <Input
           label='Contato (whatsapp/telefone)'
           keyboardType="numeric"
+          backgroundColor={colors.white}
           render={props =>
-            <MaskInput {...props}
-              value={rent.contact}
-              mask={Masks.BRL_PHONE}
-              onChangeText={value => setRent(state => ({ ...state, contact: value }))}
-            />
+            <View style={{ flexDirection: 'row', alignItems: 'center', paddingRight: 8 }}>
+              <MaskInput {...props}
+                value={rent?.contact}
+                mask={Masks.BRL_PHONE}
+                onChangeText={value => setRent(state => ({ ...state, contact: value }))}
+              />
+             {rent?.contact !== user?.phone && <TouchableOpacity onPress={() => setRent(state => ({...state, contact: user?.phone}))}>
+                <Text style={{ color: colors.main }}>Usar meu número</Text>
+              </TouchableOpacity>}
+            </View>
           }
           customContainerStyles={{
             marginHorizontal: 20,
@@ -466,8 +484,8 @@ const CreateAnnounce = () => {
               <MapView
                 provider={PROVIDER_GOOGLE}
                 initialRegion={{
-                  latitude: rent.location.latitude || -5.1811531,
-                  longitude: rent.location.longitude || -37.3476554,
+                  latitude: rent?.location.latitude || -5.1811531,
+                  longitude: rent?.location.longitude || -37.3476554,
                   latitudeDelta: announcement ? 0.015 : 0.04,
                   longitudeDelta: announcement ? 0.015 : 0.04,
                 }}
@@ -477,8 +495,8 @@ const CreateAnnounce = () => {
                 }}
                 style={styles.map}
               >
-                {!!rent.location && <Marker
-                  coordinate={rent.location}
+                {!!rent?.location && <Marker
+                  coordinate={rent?.location}
                 />}
               </MapView>
             </View>
@@ -487,40 +505,50 @@ const CreateAnnounce = () => {
 
         <View>
           <Input
-            label='Fotos'
+            label={`Fotos (${10-images?.length} disponíveis)`}
             disableBorder
             customContainerStyles={{
               marginHorizontal: 20,
             }}
             customChildren={
-              <TouchableOpacity disabled={!!images[9]} style={styles.imagePicker} onPress={handlePickerImage}>
-                {!!images[9]
+              <TouchableOpacity disabled={images?.length > 0 && !!images[9]} style={styles.imagePicker} onPress={handlePickerImage}>
+              { uploadingImages
+                ?
+                  <>
+                    <ActivityIndicator size={24} color={colors.main} />
+                    <Text style={{ color: colors.main, marginTop: 8 }}>Enviando foto...</Text>
+                  </>
+                :
+                images?.length > 0 && !!images[9]
                   ? <MaterialIcons name="lock" size={50} color={colors.grey.darker} />
                   : <MaterialIcons name="add-photo-alternate" size={50} color={colors.grey.darker} />
                 }
               </TouchableOpacity>
             }
           />
-          {images.length > 0 &&
+          {images?.length > 0 &&
             <ScrollView
               contentContainerStyle={styles.imagesContainer}
               horizontal
               showsHorizontalScrollIndicator={false}
             >
               {images.map((image, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => setImageToView(image)}
+                >
                 <ImageBackground
                   style={styles.image}
-                  key={index}
                   source={{ uri: image }}
                   resizeMode="cover"
                 >
-                  <TouchableOpacity
-                    onPress={() => setImageToView(image)}
+                  <View
                     style={styles.imageOptions}
                   >
-                    <MaterialCommunityIcons name="eye" size={30} color={colors.black.main} />
+                    <MaterialCommunityIcons name="eye" size={18} color={colors.main} />
+                  </View>
+                  </ImageBackground>
                   </TouchableOpacity>
-                </ImageBackground>
               ))}
             </ScrollView>
           }
@@ -532,8 +560,8 @@ const CreateAnnounce = () => {
               <TwoOptionSelection
                 leftOptionText={'Aceita pet'}
                 rightOptionText={'Não aceita pet'}
-                petFriendly={rent.additionalInfo?.petFriendly}
-                setPetFriendly={value => setRent(rent => ({ ...rent, additionalInfo: { ...rent.additionalInfo, petFriendly: value } }))}
+                petFriendly={rent?.petFriendly}
+                setPetFriendly={value => setRent(rent => ({ ...rent, petFriendly: value }))}
               />
             }
             customContainerStyles={{
@@ -550,79 +578,100 @@ const CreateAnnounce = () => {
             animationOutTiming={500}
           >
             <Image style={styles.imageViewer} source={{ uri: imageToView }} />
-            <View>
-              <TouchableOpacity onPress={handleRemoveImage} style={styles.imageViewerDeleteButton}>
-                <Feather name="trash-2" size={26} color={colors.grey.lighter} />
-                <Text style={styles.imageViewerDeleteButtonText}>Remover</Text>
-              </TouchableOpacity>
+            <View style={{ flexDirection: 'row' }}>
+              <Button
+                backgroundColor={colors.grey.light}
+                textColor={colors.black.main}
+                buttonText="Voltar"
+                onPress={() => setImageToView(null)}
+                customStyles={{
+                  width: '50%',
+                  borderTopLeftRadius: 0,
+                  borderTopRightRadius: 0,
+                  borderBottomRightRadius: 0,
+                }}
+              />
+              <Button
+                backgroundColor={colors.error}
+                textColor={colors.white}
+                buttonText="Remover"
+                icon={<Feather name="trash-2" size={20} color={colors.grey.lighter} />}
+                onPress={handleRemoveImage}
+                customStyles={{
+                  width: '50%',
+                  borderTopLeftRadius: 0,
+                  borderTopRightRadius: 0,
+                  borderBottomLeftRadius: 0,
+                }}
+              />
             </View>
           </ReactNativeModal>
         </View>
 
         {!announcement && <Button
-          buttonText="Cadastrar"
+          buttonText="Cadastrar imóvel"
           backgroundColor={colors.main}
           textColor={colors.grey.lighter}
           customStyles={{
-            marginHorizontal: 20,
+            marginTop: 40,
+            marginHorizontal: 24,
           }}
           loading={loading}
           loadingColor={colors.grey.lighter}
           disabled={
             loading ||
             (
-              !rent.rooms.bathrooms ||
-              !rent.rooms.bedrooms ||
-              !rent.rooms.garages ||
-              !rent.rooms.area ||
-              !rent.type ||
-              !rent.price ||
-              !rent.contact ||
-              !rent.location ||
-              images.length < 1
+              !rent?.rooms?.bathrooms ||
+              !rent?.rooms?.bedrooms ||
+              !rent?.rooms?.garages ||
+              !rent?.rooms?.area ||
+              !rent?.type ||
+              !rent?.price ||
+              !rent?.contact ||
+              !rent?.location ||
+              images?.length < 1
             )
           }
           onPress={() => handleCreateAnnounce()}
         />}
 
       </ScrollView>
-      {announcement && <Button
+      {!!isEditing && <Button
         buttonText="Finalizar edição"
         backgroundColor={colors.main}
         textColor={colors.grey.lighter}
         customStyles={{
-          marginBottom: 14,
+          marginBottom: 24,
           marginHorizontal: 20,
           position: 'absolute',
           bottom: 0,
           width: '90%',
-          shadowColor: "#000",
+          shadowColor: "rgba(0,0,0,0.5)",
           shadowOffset: {
             width: 0,
             height: 0,
           },
           shadowOpacity: 1,
           shadowRadius: 10,
-
           elevation: 20,
         }}
-        loading={loading}
+        // loading={loading}
         loadingColor={colors.grey.lighter}
         disabled={
-          loading ||
+          // loading ||
           (
-            !rent.rooms.bathrooms ||
-            !rent.rooms.bedrooms ||
-            !rent.rooms.garages ||
-            !rent.rooms.area ||
-            !rent.type ||
-            !rent.price ||
-            !rent.contact ||
-            !rent.location ||
-            images.length < 1
+            !rent?.rooms?.bathrooms ||
+            !rent?.rooms?.bedrooms ||
+            !rent?.rooms?.garages ||
+            !rent?.rooms?.area ||
+            !rent?.type ||
+            !rent?.price ||
+            !rent?.contact ||
+            !rent?.location ||
+            images?.length < 1
           )
         }
-        onPress={() => handleCreateAnnounce(true)} // true para editar
+        onPress={() => handleCreateAnnounce()} // true para editar
       />}
     </KeyboardAvoidingView >
   );

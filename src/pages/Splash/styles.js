@@ -6,7 +6,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "flex-end",
-
+    paddingTop: '16%',
   },
 
   backgroundImage: {
@@ -17,21 +17,17 @@ const styles = StyleSheet.create({
     height: Dimensions.get("window").height,
   },
 
-  header: {
-    paddingVertical: 30,
-    paddingHorizontal: 30,
-  },
   headerTextLogo: {
-    fontSize: 70,
+    fontSize: 80,
     fontFamily: typography.geo,
-    color: colors.grey.lighter,
+    marginHorizontal: 20,
   },
   headerDisclaimer: {
     fontFamily: typography.raleway.bold,
     color: colors.grey.lighter,
     fontSize: 18,
-    textShadowColor: 'rgba(0, 0, 0, 0.4)',
-    textShadowRadius: 20
+    textShadowRadius: 20,
+    marginBottom: 8,
   },
 
   formContainer: {
@@ -43,7 +39,7 @@ const styles = StyleSheet.create({
   createAccountHelperContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 48,
   },
   createAccountHelperContainerLabel: {
     color: colors.grey.darker,
@@ -54,7 +50,7 @@ const styles = StyleSheet.create({
   },
   createAccountHelperButtonText: {
     fontSize: 16,
-    color: colors.grey.lighter,
+    color: colors.grey.main,
     fontFamily: typography.inter.bold,
   }
 })

@@ -4,10 +4,10 @@ import { typography } from "../../style/typography";
 const styles = StyleSheet.create({
   button: {
     padding: 14,
-    marginTop: 16,
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
+    flexDirection: 'row'
   },
   text: {
     fontSize: 18,

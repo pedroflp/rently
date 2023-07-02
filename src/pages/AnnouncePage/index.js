@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dimensions, Image, Linking, Text, TouchableOpacity, View, ScrollView, StatusBar, ActivityIndicator, ToastAndroid } from 'react-native';
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import ReactNativeModal from 'react-native-modal';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -25,14 +25,22 @@ import { formatDate } from '../../utils/formatDate';
 import useUser from '../../hooks/useUser';
 import useAnnouncement from '../../hooks/useAnnouncement';
 import { transparentize } from 'polished';
+import { collectionsName } from '../../constants/collectionsName';
+import { navigatorNames, routeNames } from '../../routes/routeNames';
 
 const AnnouncePage = () => {
   const navigation = useNavigation()
-  const { user, changeAndStoreUser } = useUser()
-  const { announcement, setAnnouncementToEdit } = useAnnouncement()
-
+  const { userId, user } = useUser()
+  const { params: announcement } = useRoute();
+  
+  useMemo(async () => {
+    const creator = await firestore().collection(collectionsName.USERS).doc(announcement.creator).get();
+    setAnnouncementCreator(creator.data())
+  }, [announcement]);
+  
+  const [announcementCreator, setAnnouncementCreator] = useState();
   const [imagePreview, setImagePreview] = useState(null)
-  const [favoriteAnnouncementLoading, setFavoriteAnnouncementLoading] = useState(false)
+  const [isFavorited, setIsFavorited] = useState(false);
 
   const handleOpenLocationInGoogleMaps = () => {
     const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
@@ -46,80 +54,96 @@ const AnnouncePage = () => {
     Linking.openURL(url);
   }
 
-  const handleFavotireAnnouncement = () => {
-    setFavoriteAnnouncementLoading(true)
-    const announceAlreadyFavorited = user.favoritedAnnouncements.find(({ id }) => id === announcement.id)
-
-    firestore().collection("Users").doc(user.userId).update({
-      favoritedAnnouncements: announceAlreadyFavorited
-        ? firestore.FieldValue.arrayRemove({ data: announcement, id: announcement.id })
-        : firestore.FieldValue.arrayUnion({ data: announcement, id: announcement.id })
-    })
-      .then(() => {
-        firestore().collection("Users").doc(user.userId).onSnapshot(query => changeAndStoreUser({ ...user, ...query.data() }))
-      })
-      .catch(() => {
-        Toast.show({
-          type: "error",
-          text1: "Erro ao favoritar anúncio, tente depois!",
-        })
-      }).finally(() => {
-        Toast.show({
-          type: announceAlreadyFavorited ? "error" : "success",
-          text1: `Anúncio ${announceAlreadyFavorited ? "removido" : "adicionado"} dos favoritos`,
-          position: "bottom"
-        })
-        setFavoriteAnnouncementLoading(false)
-      })
+  const handleFavotireAnnouncement = async () => {
+    if (isFavorited) firestore()
+      .collection(collectionsName.USERS).doc(userId)
+      .collection(collectionsName.FAVORITES).doc(announcement.id).delete();
+    else firestore()
+      .collection(collectionsName.USERS).doc(userId)
+      .collection(collectionsName.FAVORITES).doc(announcement.id).set(announcement)
   }
+
+  useEffect(() => {
+    if (!user.isAnonymous) {
+      const isFavorited = user.favorites.findIndex(f => f.id === announcement.id) !== -1;
+      setIsFavorited(isFavorited)
+    }
+  }, [user.favorites])
 
   return (
     <View style={styles.container}>
       <TouchableOpacity activeOpacity={0.7} onPress={() => navigation.goBack()} style={styles.goBackButton}>
-        <MaterialIcons name="keyboard-arrow-left" size={40} color={colors.black.main} />
+        <Feather name="arrow-left" size={24} color={colors.black.main} />
       </TouchableOpacity>
 
-      {announcement.creator.userId === user.userId ? (
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => {
-            setAnnouncementToEdit(announcement)
-            navigation.navigate("EditAnnounce")
-          }}
-          style={styles.editButton}
-        >
-          <Feather name="edit-2" size={20} color={colors.black.main} />
-        </TouchableOpacity>
-      ) : (
+      {announcement?.creator === userId ? (
+        <View style={styles.iteractiveActionButtons}>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => {
+              navigation.navigate(routeNames.AnnouncementNavigator.CREATE, {
+                announcement, isEditing: true,
+              })
+            }}
+            style={styles.editButton}
+          >
+            <Feather name="edit-2" size={24} color={colors.black.main} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onLongPress={() => {
+              Toast.show({
+                type: 'error',
+                position: 'bottom',
+                bottomOffset: 40,
+                text1: 'Anúncio removido',
+                text2: 'Este anúncio foi removido da sua lista de anúncios',
+                visibilityTime: 3000,
+                onHide: () => {
+                  firestore().collection(collectionsName.ANNOUNCEMENTS).doc(announcement.id).delete();
+                  firestore()
+                    .collection(collectionsName.USERS).doc(userId)
+                    .collection(collectionsName.USER_ANNOUNCEMENTS).doc(announcement.id).delete();
+                  
+                  navigation.navigate(navigatorNames.TAB, {
+                    screen: routeNames.TabNavigator.HOME
+                  })
+                }
+              })
+            }}
+            style={styles.editButton}
+          >
+            <Feather name="trash" size={24} color={colors.error} />
+          </TouchableOpacity>
+        </View>
+          
+      ) : !user.isAnonymous && (
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={handleFavotireAnnouncement}
-          style={styles.editButton}
+          style={styles.favoriteButton}
         >
-          {favoriteAnnouncementLoading ? <ActivityIndicator color={colors.black.main} />
-            : (
-              user?.favoritedAnnouncements?.find(({ id }) => id === announcement.id)
-                ? <Entypo name="heart" size={30} color={colors.error} />
-                : <Entypo name="heart-outlined" size={30} color={colors.black.main} />
-            )
+          {isFavorited
+              ? <Entypo name="heart" size={24} color={colors.error} />
+              : <Entypo name="heart-outlined" size={24} color={colors.black.main} />
           }
         </TouchableOpacity>
       )}
 
-      <SliderBox
+     {!!announcement?.photos?.length && <SliderBox
         images={announcement.photos}
         onCurrentImagePressed={index => setImagePreview(announcement.photos[index])}
-        dotColor={colors.grey.lighter}
-        inactiveDotColor={transparentize(0.3, colors.grey.dark)}
+        dotColor={colors.white}
+        inactiveDotColor={transparentize(0.5, colors.white)}
         resizeMode={'cover'}
         dotStyle={{
           width: 24,
           height: 6,
         }}
-        paginationBoxVerticalPadding={Dimensions.get("window").height * 0.12}
-        sliderBoxHeight={Dimensions.get("window").height * 0.5}
-        imageLoadingColor={colors.grey.dark}
-      />
+        sliderBoxHeight={Dimensions.get("window").height * 0.40}
+        imageLoadingColor={colors.black.darker}
+
+      />}
 
       <View style={styles.content}>
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -155,7 +179,7 @@ const AnnouncePage = () => {
           </ScrollView>
 
           <View style={styles.location}>
-            <TouchableOpacity onPress={handleOpenLocationInGoogleMaps} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
+            <TouchableOpacity activeOpacity={0.8} onLongPress={handleOpenLocationInGoogleMaps} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
               <Feather name="map-pin" size={24} color={colors.black.lighter} />
               <Text style={styles.locationText}>{announcement.location.address.complete} (ver no Google Maps)</Text>
             </TouchableOpacity>
@@ -164,7 +188,7 @@ const AnnouncePage = () => {
               <MapView
                 provider={PROVIDER_GOOGLE}
                 style={{ height: 200 }}
-                region={{
+                initialRegion={{
                   latitude: announcement.location.coordinate.latitude,
                   longitude: announcement.location.coordinate.longitude,
                   latitudeDelta: 0.003,
@@ -184,22 +208,25 @@ const AnnouncePage = () => {
 
           <View style={styles.creatorCard}>
             <View style={styles.creatorInfo}>
-              {announcement.creator.photo
-                ? <Image source={{ uri: announcement.creator.photo }} style={styles.creatorPhoto} />
+              {!!announcementCreator?.photo
+                ? <Image source={{ uri: announcementCreator.photo }} style={styles.creatorPhoto} />
                 : <Ionicons name="ios-person-circle" size={40} color={colors.grey.darker} />
               }
               <View style={{ marginLeft: 4 }}>
                 <Text style={styles.creatorlabel}>Anunciante:</Text>
-                <Text style={styles.creatorName}>{announcement.creator.name}</Text>
+                <Text style={styles.creatorName}>{announcementCreator?.name}</Text>
               </View>
             </View>
           </View>
-          <Text style={styles.lastUpdateText}>Última atualização: {formatDate(announcement.lastUpdateDate, DateTime.DATETIME_SHORT)}</Text>
+          {/* <Text style={styles.lastUpdateText}>Última atualização: {formatDate(announcement.updated, DateTime.)}</Text> */}
         </ScrollView>
 
         <View style={[styles.footer, { flexDirection: announcement.price.length >= 6 ? "column" : 'row' }]}>
-          <Text style={styles.footerText}>R$ <Text style={styles.value}>{formatPrice(announcement.price)}</Text>{announcement.type === "rent" && "/mês"}</Text>
-          {announcement.creator.userId !== user.userId
+          <Text style={styles.footerText}>R$
+            <Text style={styles.value}>{formatPrice(announcement.price)}</Text>
+            {announcement.type === "rent" && "/mês"}
+          </Text>
+          {announcement.creator !== userId
             ? <TouchableOpacity activeOpacity={0.8} onPress={() => Linking.openURL(`https://wa.me/55${announcement.contact}`)} style={styles.footerButton}>
               <Text style={styles.footerButtonText}>Contatar anunciante</Text>
             </TouchableOpacity>
@@ -219,8 +246,8 @@ const AnnouncePage = () => {
         <ImageViewer
           enableSwipeDown
           onCancel={() => setImagePreview(false)}
-          imageUrls={announcement.photos.map(photo => ({ url: photo }))}
-          index={announcement.photos.indexOf(imagePreview)}
+          imageUrls={announcement?.photos?.map(photo => ({ url: photo }))}
+          index={announcement?.photos?.indexOf(imagePreview)}
           backgroundColor={transparentize(0.4, colors.black.darker)}
         />
       </ReactNativeModal>

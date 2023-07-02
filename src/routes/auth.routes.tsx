@@ -19,11 +19,11 @@ const AuthRouter = () => {
           backgroundColor: colors.grey.main,
         }
       }}
+      initialRouteName='Login'
     >
-      <Screen name="Splash" component={Splash} />
-      <Screen options={{ animation: 'slide_from_bottom' }} name="Login" component={Login} />
+      <Screen name="Login" component={Login} />
+      <Screen name="CreateAccount" component={CreateAccount} />
       {/* <Screen options={{ animation: 'slide_from_bottom' }} name="ResetPassword" component={ResetPassword} /> */}
-      <Screen options={{ animation: 'slide_from_bottom' }} name="CreateAccount" component={CreateAccount} />
     </Navigator>
   )
 }

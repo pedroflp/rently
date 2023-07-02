@@ -6,9 +6,9 @@ import { typography } from '../../style/typography'
 export const styles = StyleSheet.create({
   label: {
     fontFamily: typography.raleway.bold,
-    marginBottom: 4,
+    marginBottom: 8,
     fontSize: 16,
-    color: colors.black.lighter,
+    color: colors.black.main,
   },
   input: {
     marginBottom: 10,

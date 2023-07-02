@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native'
 import Toast from 'react-native-toast-message'
 import ReactNativeModal from 'react-native-modal';
@@ -10,19 +10,22 @@ import firestore from '@react-native-firebase/firestore'
 import HouseCard from '../../components/HouseCard';
 import FilterSearch from '../../components/FilterSearch';
 
-import Feather from 'react-native-vector-icons/Feather'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
+
 
 import styles from './styles';
 import { colors } from '../../style/colors';
 
 import useUser from '../../hooks/useUser';
 import useAnnouncement from '../../hooks/useAnnouncement';
+import { navigatorNames, routeNames } from '../../routes/routeNames';
+import { collectionsName } from '../../constants/collectionsName';
 
 const Home = () => {
   const navigation = useNavigation()
   const { user } = useUser()
-  const { setAnnouncement } = useAnnouncement()
+  // const { setAnnouncement } = useAnnouncement()
 
   const [houses, setHouses] = useState([])
   // const [prices, setPrices] = useState({
@@ -37,41 +40,35 @@ const Home = () => {
   const [filterModalIsOpened, setFilterModalIsOpened] = useState(false)
   const [filteredSearch, setFilteredSearch] = useState(false)
 
-  const [loadingAnnounces, setLoadingAnnounces] = useState(false)
-
   const handleFilterSearch = () => {
-    setLoadingAnnounces(true)
-    let query = firestore().collection("Houses")
+    let query = firestore().collection(collectionsName.ANNOUNCEMENTS)
 
     if (!!typeFilter) query = query.where("type", '==', typeFilter)
     if (!!categoryFilter) query = query.where("category", '==', categoryFilter)
 
     query.onSnapshot(query => {
       const data = query.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-
       setHouses(data)
     })
 
-    setLoadingAnnounces(false)
     setFilteredSearch(true)
     setFilterModalIsOpened(false)
   }
 
-  useEffect(() => {
-    if (!filteredSearch) {
-      setLoadingAnnounces(true)
-      firestore()
-        .collection("Houses")
-        .onSnapshot(query => {
-          if (query.docs.length > 0) {
-            const data = query.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  const getAnnouncementsData = () => {
+    firestore()
+    .collection(collectionsName.ANNOUNCEMENTS)
+      .onSnapshot(
+        query => {
+          const announcements = query.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+          setHouses(announcements);
+        },
+      );
+  }
 
-            if (data.length > 0) setHouses(data)
-          }
-          setLoadingAnnounces(false)
-        })
-    }
-  }, [filteredSearch])
+  useEffect(() => {
+    getAnnouncementsData();
+  }, [])
 
   const categories = [
     {
@@ -101,38 +98,38 @@ const Home = () => {
 
   return (
     <View style={styles.container}>
-      <View style={{ paddingHorizontal: 30, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-        <Text style={styles.houseListTitle}>Imóveis disponíveis</Text>
+      <View style={{ marginBottom: 8, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+        <Text style={styles.houseListTitle}>Imóveis próximos à você!</Text>
+
         <TouchableOpacity onPress={() => setFilterModalIsOpened(true)}>
           <Ionicons name="ios-filter" size={24} color="black" />
         </TouchableOpacity>
       </View>
 
-      {loadingAnnounces
-        ? <ActivityIndicator color={colors.grey.dark} size={40} style={{ flex: 0.3 }} />
-        : (
-          houses?.length > 0
-            ? (
-              <ScrollView
-                contentContainerStyle={styles.houseList}
-                showsVerticalScrollIndicator={false}
-              >
-                {houses.map(house => (
-                  <HouseCard
-                    {...house}
-                    onPress={() => {
-                      setAnnouncement({ id: house.id, ...house })
-                      navigation.navigate("AnnouncePage")
-                    }}
-                    key={house.id}
-                    user={user}
-                  />
-                ))}
-              </ScrollView>
-            )
-            : <Text style={styles.houseListEmpty}>Nenhum imóvel encontrado</Text>
-        )
-      }
+      
+      <FlatList
+        data={houses}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <MaterialIcons name='apartment' size={100} color={colors.grey.main} />
+            <Text style={styles.emptyStateText}>Ops, parece que não achamos nenhum imóvel :(</Text>
+          </View>
+        }
+        keyExtractor={(item) => String(item.id)}
+        renderItem={({ item: house}) => (
+          <HouseCard
+            {...house}
+            onPress={() => {
+              navigation.navigate(navigatorNames.ANNOUNCEMENT, {
+                screen: routeNames.AnnouncementNavigator.HOME,
+                params: { ...house }
+              })
+            }}
+            key={house.id}
+            user={user}
+          />
+        )}
+      />
 
       <ReactNativeModal
         isVisible={filterModalIsOpened}
