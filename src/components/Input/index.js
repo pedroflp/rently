@@ -25,7 +25,7 @@ export const Input = ({
 }) => {
   return (
     <View style={{ ...customContainerStyles }}>
-      <Text style={[styles.label, { ...customLabelStyles }]}>{label}</Text>
+     {!!label && <Text style={[styles.label, { ...customLabelStyles }]}>{label}</Text>}
       {customChildren
         ? <View style={[styles.input, { borderColor: disableBorder ? "transparent" : borderColor, backgroundColor: backgroundColor, color: textColor }]}>
           {customChildren}

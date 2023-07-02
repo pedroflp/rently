@@ -9,12 +9,14 @@ import UserProfile from '../pages/UserProfile';
 import { colors } from '../style/colors';
 import FavoritesPage from '../pages/FavoritesPage';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { navigatorNames, routeNames } from './routeNames';
 
 const { Navigator, Screen } = createNativeStackNavigator()
 
-const UserStackRouter = () => {
+const AnnouncementStackRouter = () => {
   return (
     <Navigator
+      initialRouteName={routeNames.AnnouncementNavigator.HOME}
       screenOptions={{
         headerShown: false,
         animation: 'slide_from_right',
@@ -22,18 +24,18 @@ const UserStackRouter = () => {
           backgroundColor: colors.grey.main,
         }
       }}
-    >
+      >
       <Screen 
-        name="EditAnnounce" 
-        component={CreateAnnounce} 
-        options={{ contentStyle: { backgroundColor: colors.grey.lighter } }} 
+        name={routeNames[navigatorNames.ANNOUNCEMENT].HOME}
+        component={AnnouncePage} 
       />
       <Screen 
-        name="AnnouncePage" 
-        component={AnnouncePage} 
+        name={routeNames[navigatorNames.ANNOUNCEMENT].CREATE}
+        component={CreateAnnounce} 
+        options={{ contentStyle: { backgroundColor: colors.grey.lighter } }} 
       />
     </Navigator>
   );
 }
 
-export default UserStackRouter;
+export default AnnouncementStackRouter;

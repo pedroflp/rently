@@ -1,5 +1,5 @@
 import { lighten } from "polished";
-import { Dimensions, StyleSheet } from "react-native";
+import { Dimensions, Platform, StyleSheet } from "react-native";
 import { colors } from "../../style/colors";
 import { typography } from "../../style/typography";
 
@@ -8,7 +8,36 @@ const styles = StyleSheet.create({
     position: "relative",
     flex: 1,
   },
+  iteractiveActionButtons: {
+    position: "absolute",
+    top: 50,
+    right: 20,
+    zIndex: 99,
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
 
+  favoriteButton: {
+    position: "absolute",
+    top: 50,
+    right: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 500,
+    backgroundColor: colors.grey.lighter,
+    zIndex: 99,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "rgba(0,0,0,0.5)",
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+
+    elevation: 30,
+  },
   goBackButton: {
     position: "absolute",
     top: 50,
@@ -32,14 +61,11 @@ const styles = StyleSheet.create({
   },
 
   editButton: {
-    position: "absolute",
-    top: 50,
-    right: 20,
+    borderRadius: 500,
     width: 50,
     height: 50,
-    borderRadius: 500,
+    marginBottom: 16,
     backgroundColor: colors.grey.lighter,
-    zIndex: 99,
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "rgba(0,0,0,0.5)",
@@ -60,8 +86,6 @@ const styles = StyleSheet.create({
     height: Dimensions.get("window").height * 0.6,
     width: Dimensions.get("window").width,
     overflow: "hidden",
-    borderTopRightRadius: 40,
-    borderTopLeftRadius: 40,
     zIndex: 99,
     shadowColor: "rgba(0,0,0,1)",
     shadowOffset: {
@@ -93,7 +117,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginRight: 10,
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 6,
     paddingHorizontal: 10,
@@ -162,19 +186,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
+    paddingBottom: Platform.select({
+      android: 12,
+      ios: 24
+    })
   },
 
   footerText: {
-    fontFamily: typography.raleway.regular,
-    fontSize: 18,
+    fontFamily: typography.inter.regular,
+    fontSize: 16,
     color: colors.black.lighter,
-    marginRight: 10,
-    marginBottom: 4,
   },
   value: {
-    fontFamily: typography.inter.bold,
-    fontSize: 22,
+    fontFamily: typography.raleway.bold,
+    fontSize: 26,
     color: colors.black.main,
+    marginLeft: 4,
   },
 
   footerButton: {
@@ -195,8 +222,9 @@ const styles = StyleSheet.create({
   announceFlag: {
     paddingVertical: 6,
     paddingHorizontal: 12,
-    backgroundColor: lighten(0.05, colors.error),
-    borderRadius: 100,
+    backgroundColor: colors.main,
+    borderRadius: 8,
+    overflow: 'hidden',
     color: colors.grey.lighter,
   },
 

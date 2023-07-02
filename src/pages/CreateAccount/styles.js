@@ -1,30 +1,34 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, Platform, StyleSheet } from "react-native";
 import { colors } from "../../style/colors";
 import { typography } from "../../style/typography";
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 30,
-    justifyContent: 'center'
+    // flex: 1,
+    paddingHorizontal: 30,
+    paddingTop: Platform.select({
+      ios: '20%',
+      android: '10%'
+    }),
   },
 
   title: {
-    fontSize: 40,
-    textAlign: 'center',
-    fontFamily: typography.inter.bold,
+    fontSize: 50,
+    width: '80%',
+    marginTop: 16,
+    fontFamily: typography.geo,
+    letterSpacing: -2,
     marginBottom: 30,
-    color: colors.black.main,
+    color: colors.black.darker,
   },
 
   formCard: {
-    marginBottom: 10,
   },
   formCardLabel: {
     fontSize: 18,
-    fontFamily: typography.inter.semiBold,
-    marginBottom: 5,
-    color: colors.black.main,
+    fontFamily: typography.raleway.bold,
+    marginBottom: 20,
+    color: colors.grey.darker,
   }
 })
 

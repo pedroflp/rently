@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import { colors } from "../../style/colors";
 import { typography } from "../../style/typography";
 
@@ -8,6 +8,10 @@ export const styles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     padding: 20,
+    paddingBottom: Platform.select({
+      ios: 32,
+      android: 20,
+    })
   },
   filterModalTitle: {
     fontFamily: typography.raleway.bold,

@@ -5,7 +5,7 @@ import { typography } from "../../style/typography";
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    paddingHorizontal: 20,
     backgroundColor: lighten(0.06, colors.grey.main),
     paddingTop: Platform.select({
       android: 50, ios: 60
@@ -47,9 +47,11 @@ const styles = StyleSheet.create({
 
   houseListTitle: {
     marginRight: 10,
-    fontFamily: typography.raleway.bold,
-    fontSize: 26,
+    fontFamily: typography.geo,
+    fontSize: 32,
     marginBottom: 10,
+    letterSpacing: -1,
+    width: '65%',
     color: colors.black.main,
   },
   houseList: {
@@ -66,6 +68,20 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: typography.raleway.bold,
   },
+  emptyState: {
+    marginTop: '30%',
+    marginBottom: '70%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyStateText: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: colors.grey.dark,
+    textAlign: 'center',
+    width: '70%',
+    marginTop: 8
+  }
 })
 
 export default styles

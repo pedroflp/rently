@@ -5,13 +5,12 @@ import { typography } from "../../style/typography";
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex:1,
     justifyContent: 'flex-start',
     alignItems: 'center',
     width: Dimensions.get("window").width * 0.9,
-    backgroundColor: colors.grey.lighter,
+    backgroundColor: colors.white,
     borderRadius: 20,
-    marginHorizontal: 20,
     marginBottom: 16,
     overflow: "hidden",
     padding: 10,
@@ -22,7 +21,7 @@ const styles = StyleSheet.create({
       height: 10,
     },
     shadowRadius: 10,
-    elevation: 10,
+    elevation: 20,
     position: "relative",
   },
 
@@ -51,7 +50,7 @@ const styles = StyleSheet.create({
   backgroundImage: {
     width: '100%',
     height: 180,
-    borderRadius: 10,
+    borderRadius: 8,
   },
 
   content: {
@@ -98,8 +97,8 @@ const styles = StyleSheet.create({
   },
 
   locationLabel: {
-    color: colors.grey.darker,
-    fontFamily: typography.raleway.regular,
+    color: colors.black.light,
+    fontFamily: typography.raleway.bold,
     fontSize: 14,
     marginLeft: 4,
   },
@@ -120,13 +119,13 @@ const styles = StyleSheet.create({
 
   price: {
     marginTop: 10,
-    fontSize: 18,
+    fontSize: 16,
     color: colors.black.lighter,
   },
   value: {
-    fontFamily: typography.inter.bold,
-    fontSize: 22,
-    color: colors.black.main,
+    fontFamily: typography.raleway.bold,
+    fontSize: 26,
+    color: colors.black.darker,
   },
 
   roomsInformation: {
@@ -136,9 +135,10 @@ const styles = StyleSheet.create({
   },
 
   roomsText: {
-    fontFamily: typography.raleway.bold,
+    fontFamily: typography.inter.regular,
     color: colors.black.lighter,
     fontSize: 13,
+    marginTop: 6,
   },
 })
 
