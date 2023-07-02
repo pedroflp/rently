@@ -6,6 +6,7 @@ const styles = StyleSheet.create({
   container: {
     // flex: 1,
     paddingHorizontal: 30,
+    paddingBottom: 20,
     paddingTop: Platform.select({
       ios: '20%',
       android: '10%'

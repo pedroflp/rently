@@ -65,7 +65,7 @@ const CreateAccount = () => {
   return (
     <ScrollView
       contentContainerStyle={{
-        flex: 1, justifyContent: 'space-around'
+        flex: 1, justifyContent: 'space-between', 
       }}
       style={styles.container}
     >
@@ -132,7 +132,6 @@ const CreateAccount = () => {
             screen: routeNames.AuthNavigator.LOGIN
           })}
           textColor={colors.black.main}
-          customStyles={{ padding: 0 }}
         />
       </View>
     </ScrollView>
