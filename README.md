@@ -28,7 +28,7 @@ Rently 1.0 - APK Version
 ## Cool implementations
 
 - Use application anonymously, without a required signin
-- Upgrade from anonym account to credital use account
+- Upgrade from anonym account to credential use account
 - Smart and adaptative dynamic UI based in user account type (guest, user, announcer)
 
 
